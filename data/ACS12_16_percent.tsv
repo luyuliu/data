@@ -1,4 +1,4 @@
-OBJECTID	GEO_id	foreign_born_pct	edu_less_hs	unemployment	below_poverty	female_headed_hh	pct_Hispanic	pct_Black	county	OI	SEBS_All
+OBJECTID	GEO_id	foreign_born_pct	edu_less_hs	unemployment	below_poverty	female_headed_hh	pct_Hispanic	pct_Black	county	OI	SEBS
 0	0	3.960785392	11.86756319	8.782378942	18.26404502	9.449005512	3.737017426	16.24185682	average	21.7065367	0.006784336
 1	39123050100	3.1365314	4.7619048	4.290429	6.8265683	3.2608696	2.5830258	1.6605166	Ottawa	6.793131034	0
 2	39069000600	0.4588472	10.237581	8.2541568	13.3763567	11.1594203	8.1445369	0.4301692	Henry	20.21909149	0.0041943
