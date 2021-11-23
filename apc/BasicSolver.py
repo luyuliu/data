@@ -34,9 +34,12 @@ class BasicSolver:
         for n in range(int((end_date - start_date).days)):
             yield start_date + timedelta(n)
 
-    def find_gtfs_time_stamp(self, single_date):
-        today_date = single_date.strftime("%Y%m%d")  # date
-        today_seconds = time.mktime(time.strptime(today_date, "%Y%m%d"))
+    def find_gtfs_time_stamp(self, single_date, isDate=True):
+        if isDate:
+            today_date = single_date.strftime("%Y%m%d")  # date
+            today_seconds = time.mktime(time.strptime(today_date, "%Y%m%d"))
+        else:
+            today_seconds = single_date
         backup = self.db_time_stamps[0]
         for each_time_stamp in self.db_time_stamps:
             if each_time_stamp - today_seconds > 86400:

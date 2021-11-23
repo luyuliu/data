@@ -35,21 +35,19 @@ class APCTester(BasicSolver.BasicSolver):
         # self.col_stop_times = self.db_GTFS[str(self.curGTFSTimestamp) + "_stop_times"]
         # self.col_real_times = self.db_real_time["R" + todayDate]
         self.col_apc_raw = []
-        self.date_range = [date(int(m/12), int(m % 12+1), 1) for m in range(self.start_date.year * 12 + self.start_date.month - 1, self.end_date.year*12 + self.end_date.month)]
-        for each_month in self.date_range:
+        self.month_range = [date(int(m/12), int(m % 12+1), 1) for m in range(self.start_date.year * 12 + self.start_date.month - 1, self.end_date.year*12 + self.end_date.month)]
+        for each_month in self.month_range:
             self.col_apc_raw.append(each_month.strftime("%Y%m"))
 
     def unzipCSVFiles(self):
-        for each_date in tqdm(self.date_range):
+        for each_date in tqdm(self.month_range):
             file_name = each_date.strftime("%Y-%m") + "_COTA_APC_data"
             with ZipFile(self.base_location + file_name + ".zip") as zf:
                 zf.extractall(self.base_location)
 
     def normalizeAPC(self):
-        for each_date in (self.date_range):
-            GTFSTimestamp = self.find_gtfs_time_stamp(each_date)
-            col_stops = client.cota_gtfs[str(GTFSTimestamp) + "_stops"]
-            file_name = each_date.strftime("%Y-%m") + "_COTA_APC_data"
+        for each_month_date in (self.month_range):
+            file_name = each_month_date.strftime("%Y-%m") + "_COTA_APC_data"
             print("**********", file_name, ", start... **********")
             insert_dic = {}
             with open(self.base_location + file_name + '.csv', 'r') as infile:
@@ -67,7 +65,11 @@ class APCTester(BasicSolver.BasicSolver):
                     eachRecordDic = self.translateFieldName(originDic)
 
                     # Find stop_id from GTFS.
+                    today_date = eachRecordDic["start_date"]
+                    today_seconds = time.mktime(time.strptime(today_date, "%Y%m%d"))
                     stop_code = str(eachRecordDic["stop_code"])
+                    GTFSTimestamp = self.find_gtfs_time_stamp(today_seconds, isDate=False)
+                    col_stops = client.cota_gtfs[str(GTFSTimestamp) + "_stops"]
                     rl_stop = col_stops.find_one({"stop_code": stop_code})
                     if rl_stop == None:
                         eachRecordDic["stop_id"] = "unknown"
@@ -75,7 +77,6 @@ class APCTester(BasicSolver.BasicSolver):
                         eachRecordDic["stop_id"] = rl_stop["stop_id"]
 
                     # Store in memory
-                    today_date = eachRecordDic["start_date"]
                     try:
                         insert_dic[today_date]
                     except:
@@ -88,12 +89,10 @@ class APCTester(BasicSolver.BasicSolver):
                     continue
                 # self.db_apc[each_date].drop()
                 self.db_apc[each_date].insert_many(each_list)
+                self.db_apc[each_date].create_index([("trip_id", ASCENDING), ("stop_id", ASCENDING)])
                 print("--------", each_date, "--------")
 
             print("**********", file_name, ", end... **********")
-
-
-
                 
     def translateFieldName(self, originDic):
         eachRecordDic = {}
@@ -146,20 +145,16 @@ class APCTester(BasicSolver.BasicSolver):
         eachRecordDic["rear_door_boardings"] = int(originDic["REAR_DOOR_BOARDINGS"])
         return eachRecordDic
 
-    def insertRecords(self, insertDic):
-        a = 1
-
 def normalizeAPC():
     tester = APCTester()
     tester.normalizeAPC()
-
 
 if __name__ == "__main__":
     tester = APCTester()
     tester.normalizeAPC()
     # pool = multiprocessing.Pool(processes=3)
-    # date_range = ["May18", "Sep18", "Jan19"]
+    # month_range = ["May18", "Sep18", "Jan19"]
     # output = []
-    # output = pool.map(normalizeAPC, date_range)
+    # output = pool.map(normalizeAPC, month_range)
     # pool.close()
     # pool.join()
