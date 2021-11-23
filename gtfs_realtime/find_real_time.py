@@ -194,6 +194,10 @@ def paralleling_transfers(single_date):
             recordss["stop_sequence"] = stop_sequence
             recordss["trip_sequence"] = trip_sequence
             recordss["scheduled_time"] = scheduled_time
+            recordss["location"] = {
+                "type" : "Point", 
+                "coordinates" : [recordss["lon"], recordss["lat"]]
+            }
 
             count += 1
             if count % 10000 == 1:
