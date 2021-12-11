@@ -27,7 +27,7 @@ def convertSeconds(BTimeString):
 client = pymongo.MongoClient('mongodb://localhost:27017/')
 db_GTFS = client.cota_gtfs
 
-db_tripupdate = client.trip_update
+db_tripupdate = client.cota_trip_update
 
 db_realtime = client.cota_real_time
 
@@ -42,7 +42,8 @@ def paralleling_transfers(single_date):
     today_date = single_date.strftime("%Y%m%d")  # date
 
     # The GTFS feed collection which has been divided by each day.
-    col_feed = db_tripupdate[today_date]
+    # col_feed = db_tripupdate[today_date]
+    col_feed = db_tripupdate["all_trip_update_20200717"]
 
     # Find the corresponding GTFS set.
     that_time_stamp = transfer_tools.find_gtfs_time_stamp(single_date)
@@ -59,7 +60,7 @@ def paralleling_transfers(single_date):
     # Collection to be added.
     col_real_time = db_realtime["R"+today_date]
     # The GTFS feed collection which has been divided by each day.
-    rl_feeds = (col_feed.find({}, no_cursor_timeout=True))
+    rl_feeds = (col_feed.find({"start_date": today_date}, no_cursor_timeout=True))
     if rl_feeds.count() == 0:  # There is no feed this day, which shouldn't happen.
         print("-----------------------", today_date,
               " : Skip -----------------------")
@@ -220,8 +221,8 @@ def paralleling_transfers(single_date):
 
 
 if __name__ == '__main__':
-    start_date = date(2019, 1, 31)
-    end_date = date(2019, 6, 20)
+    start_date = date(2020, 4, 24)
+    end_date = date(2020, 7, 16)
     # each_date = date(2018, 1, 29)
     # paralleling_transfers(each_date)
     ''' for each_date in daterange(start_date, end_date):
