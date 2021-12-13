@@ -2,6 +2,8 @@
 '''
 This script will find the real-time arrival/departure time from the GTFS
 real-time feed. 
+
+Need to first run find 
 '''
 
 import pymongo

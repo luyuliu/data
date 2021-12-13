@@ -39,7 +39,5 @@ for each_time_stamp in db_time_stamps:
     db_trips.create_index([("route_id", pymongo.ASCENDING), ("service_id", pymongo.ASCENDING)])
     db_trips.create_index([("trip_id", pymongo.ASCENDING), ("service_id", pymongo.ASCENDING)])
 
-    db_stop_times.create_index([("trip_id", pymongo.ASCENDING), ("stop_id", pymongo.ASCENDING)])
-
     db_stops.create_index([("stop_id", pymongo.ASCENDING)])
     db_stops.create_index([("stop_code", pymongo.ASCENDING)])
