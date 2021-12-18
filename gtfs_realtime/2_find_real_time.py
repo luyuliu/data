@@ -10,8 +10,8 @@ import pymongo
 from datetime import timedelta, date
 import time
 import multiprocessing
-
-import os
+from tqdm import tqdm
+import os, math
 import sys
 import time
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -45,15 +45,12 @@ def paralleling_transfers(single_date):
 
     # The GTFS feed collection which has been divided by each day.
     # col_feed = db_tripupdate[today_date]
-    col_feed = db_tripupdate["all_trip_update_20200717"]
+    col_feed = db_tripupdate["all_trip_update_20211124"]
 
     # Find the corresponding GTFS set.
     that_time_stamp = transfer_tools.find_gtfs_time_stamp(single_date)
-    print("-----------------------", today_date, ": Start/ From",
-          date.fromtimestamp(that_time_stamp), " -----------------------")
 
     # a=date.fromtimestamp(that_time_stamp)
-    # print(a)
     db_seq = db_GTFS[str(that_time_stamp)+"_trip_seq"]
     db_stops = db_GTFS[str(that_time_stamp)+"_stops"]
     db_stop_times = db_GTFS[str(that_time_stamp)+"_stop_times"]
@@ -64,10 +61,7 @@ def paralleling_transfers(single_date):
     # The GTFS feed collection which has been divided by each day.
     rl_feeds = (col_feed.find({"start_date": today_date}, no_cursor_timeout=True))
     if rl_feeds.count() == 0:  # There is no feed this day, which shouldn't happen.
-        print("-----------------------", today_date,
-              " : Skip -----------------------")
         return
-    print("-----------------------", "FindDone", "-----------------------")
     total_count = rl_feeds.count()  # Total length of this day's feed.
 
     count = 0
@@ -104,10 +98,6 @@ def paralleling_transfers(single_date):
                     time_matrix[trip_id][stop_id] = {
                         "seq": seq_count, "time": each_stop["arr"]}
             seq_count += 1
-
-        if count % 10000 == 0:
-            print("-----------------------", "QueryDoneBy:", count /
-                  total_count*100, today_date, "-----------------------")
         count += 1
 
     today_date = single_date.strftime("%Y%m%d")  # date
@@ -120,7 +110,6 @@ def paralleling_transfers(single_date):
     else:
         service_id = 3
 
-    print(today_date, ": Start.")
     stop_dic = {}
     trip_dic = {}
     count = 0
@@ -203,8 +192,6 @@ def paralleling_transfers(single_date):
             }
 
             count += 1
-            if count % 10000 == 1:
-                print(today_date, ": ", count/total_count*100)
 
             insertionList.append(recordss)
 
@@ -215,25 +202,26 @@ def paralleling_transfers(single_date):
     col_real_time.insert_many(insertionList)
     insertionList = []
 
-    print("-----------------------", "InsertDone:", today_date, "-----------------------")
     end_time = time.time()
-    print(end_time-start_time)
 
     col_real_time.create_index([("trip_id", 1), ("stop_id", 1)])
 
 
 if __name__ == '__main__':
-    start_date = date(2020, 4, 24)
-    end_date = date(2020, 7, 16)
-    # each_date = date(2018, 1, 29)
-    # paralleling_transfers(each_date)
-    ''' for each_date in daterange(start_date, end_date):
-        paralleling_transfers(each_date)'''
-
-    cores = multiprocessing.cpu_count()
-    pool = multiprocessing.Pool(processes=30)
-    date_range = transfer_tools.daterange(start_date, end_date)
-    output=[]
-    output=pool.map(paralleling_transfers, date_range)
-    pool.close()
-    pool.join()
+    start_date = date(2020, 7, 16)
+    end_date = date(2021, 11, 24)
+    date_range = list(transfer_tools.daterange(start_date, end_date))
+    cores = 30
+    total_length = len(date_range)
+    batch = math.ceil(total_length/cores)
+    for i in tqdm(list(range(batch)), position=0, leave=True):
+        pool = multiprocessing.Pool(processes=cores)
+        sub_output = []
+        try:
+            sub_date_range = date_range[cores*i:cores*(i+1)]
+        except:
+            sub_date_range = date_range[cores*i:]
+        sub_output = pool.map(paralleling_transfers, sub_date_range)
+        pool.close()
+        pool.join()
+        print("----------------", date_range[cores*i], " to ", date_range[cores*(i+1)], " finished... ----------------")

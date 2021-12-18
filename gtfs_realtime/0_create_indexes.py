@@ -3,6 +3,7 @@
 import pymongo
 from datetime import timedelta, date
 import time
+from tqdm import tqdm
 
 def convertSeconds(BTimeString):
     time = BTimeString.split(":")
@@ -30,7 +31,7 @@ for each_raw in db_time_stamps_set:
 db_time_stamps.sort()
 
 
-for each_time_stamp in db_time_stamps:
+for each_time_stamp in tqdm(db_time_stamps):
     db_stops=db_GTFS[str(each_time_stamp)+"_stops"]
     db_stop_times=db_GTFS[str(each_time_stamp)+"_stop_times"]
     db_trips=db_GTFS[str(each_time_stamp)+"_trips"]
@@ -41,3 +42,5 @@ for each_time_stamp in db_time_stamps:
 
     db_stops.create_index([("stop_id", pymongo.ASCENDING)])
     db_stops.create_index([("stop_code", pymongo.ASCENDING)])
+
+    db_stop_times.create_index([("trip_id", pymongo.ASCENDING), ("stop_id", pymongo.ASCENDING)])
