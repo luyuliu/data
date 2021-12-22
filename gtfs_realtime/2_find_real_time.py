@@ -208,7 +208,7 @@ def paralleling_transfers(single_date):
 
 
 if __name__ == '__main__':
-    start_date = date(2020, 7, 16)
+    start_date = date(2021, 1, 12)
     end_date = date(2021, 11, 24)
     date_range = list(transfer_tools.daterange(start_date, end_date))
     cores = 30
