@@ -1,9 +1,16 @@
-# This script adds necessary indexes for GTFS data
+# This script adds necessary indexes for GTFS data. It will improve the performance significantly.
 
 import pymongo
 from datetime import timedelta, date
 import time
 from tqdm import tqdm
+
+''' !!!Parameters to change!!! '''
+client = pymongo.MongoClient('mongodb://localhost:27017/')
+db_GTFS = client.cota_gtfs
+db_tripupdate = client.cota_trip_update # Raw trip update database
+trip_update_source_collection_name = "all_trip_update_20211124" # Raw trip update collection name
+
 
 def convertSeconds(BTimeString):
     time = BTimeString.split(":")
@@ -15,10 +22,8 @@ def convertSeconds(BTimeString):
 def sortArray(a):
     return a["time"]
 
-# database setup
-client = pymongo.MongoClient('mongodb://localhost:27017/')
-db_GTFS = client.cota_gtfs
 
+# Find all GTFS schedule with unique timestamps
 db_time_stamps_set=set()
 db_time_stamps=[]
 raw_stamps=db_GTFS.collection_names()
@@ -30,6 +35,7 @@ for each_raw in db_time_stamps_set:
     db_time_stamps.append(each_raw)
 db_time_stamps.sort()
 
+db_tripupdate[trip_update_source_collection_name].create_index([("start_date", 1)]) # Will take a long time
 
 for each_time_stamp in tqdm(db_time_stamps):
     db_stops=db_GTFS[str(each_time_stamp)+"_stops"]

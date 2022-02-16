@@ -1,3 +1,8 @@
+# Create a new collection called trip_seq as an indication of sequence of trips in a same route at a stop. Notice that different directions have different route_id, which is determined by direction_id in the route collection
+# direction_id = 0, route_id = + int(origin_route_id) (original_route_id is the origin route_id in the route collection, such as "001") 
+# direction_id = 1, route_id = - int(origin_route_id)
+# service_id is an indicator of weekday. service_id = 1 is Mon - Fri, service_id = 2 is Sat, service_id = 3 is Sun.
+
 import pymongo
 from datetime import timedelta, date
 import time
@@ -40,7 +45,7 @@ for each_time_stamp in db_time_stamps:
     db_trips.create_index([("trip_id", 1)])
 
     pre_count = db_seq.estimated_document_count()
-    if pre_count != 0:
+    if pre_count != 0: # Skip those GTFS collections that already have a nonempty trip_seq
         print("-----------------------","Skip: ",each_time_stamp,schedule_count,total_schedule_count, "-----------------------")
         continue
 

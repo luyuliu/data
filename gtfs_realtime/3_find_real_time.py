@@ -1,10 +1,6 @@
-
-'''
-This script will find the real-time arrival/departure time from the GTFS
-real-time feed. 
-
-Need to first run find 
-'''
+# This script will find the real-time arrival/departure time from the GTFS real-time feed. 
+# Need to first run 1_create_indexes.py and 2_create_trip_seq.py.
+# The output (cota_real_time database) is daily collection of actual and scheduled arrival time in the COTA system, with trip_id, route_id, stop_id, and everything you will ever need.
 
 import pymongo
 from datetime import timedelta, date
@@ -17,22 +13,23 @@ import time
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import transfer_tools
 
+''' !!!Parameters to change!!! '''
+trip_update_source_collection_name = "all_trip_update_20211124" # Raw trip update collection name
+start_date = date(2021, 1, 12)
+end_date = date(2021, 11, 24)
+cores = 30 # Paralleling process count. Go to task manager to find how many logical processors your machine have. I recommend to use 3/4 of all the cores you have. 
+# For example, CURA workstation has 40 cores, I find 30 cores are a reasonable balance between speed and reliability. 35 is still okay but may risk crashing. 
+client = pymongo.MongoClient('mongodb://localhost:27017/')
+db_GTFS = client.cota_gtfs # GTFS database
+db_tripupdate = client.cota_trip_update # Raw trip update database
+db_realtime = client.cota_real_time # Output. Processed actual arrival time database
+
 def convertSeconds(BTimeString):
     time = BTimeString.split(":")
     hours = int(time[0])
     minutes = int(time[1])
     seconds = int(time[2])
     return hours * 3600 + minutes * 60 + seconds
-
-
-# database setup
-client = pymongo.MongoClient('mongodb://localhost:27017/')
-db_GTFS = client.cota_gtfs
-
-db_tripupdate = client.cota_trip_update
-
-db_realtime = client.cota_real_time
-
 
 # main loop
 # enumerate every day in the range
@@ -45,7 +42,7 @@ def paralleling_transfers(single_date):
 
     # The GTFS feed collection which has been divided by each day.
     # col_feed = db_tripupdate[today_date]
-    col_feed = db_tripupdate["all_trip_update_20211124"]
+    col_feed = db_tripupdate[trip_update_source_collection_name] # The source trip update 
 
     # Find the corresponding GTFS set.
     that_time_stamp = transfer_tools.find_gtfs_time_stamp(single_date)
@@ -205,13 +202,11 @@ def paralleling_transfers(single_date):
     end_time = time.time()
 
     col_real_time.create_index([("trip_id", 1), ("stop_id", 1)])
+    col_real_time.create_index([("trip_sequence", 1), ("stop_id", 1)])
 
 
 if __name__ == '__main__':
-    start_date = date(2021, 1, 12)
-    end_date = date(2021, 11, 24)
     date_range = list(transfer_tools.daterange(start_date, end_date))
-    cores = 30
     total_length = len(date_range)
     batch = math.ceil(total_length/cores)
     for i in tqdm(list(range(batch)), position=0, leave=True):

@@ -17,3 +17,5 @@ blist = list(b.find({"start_date": "20200209"}))
 t3 = time.time()
 
 print(t3 - t2, t2 - t1, len(alist), len(blist))
+
+# Conclusion: there is basically no difference between those two queries 
