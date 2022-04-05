@@ -20,9 +20,9 @@ class APCTester(BasicSolver.BasicSolver):
     def __init__(self):
         BasicSolver.BasicSolver.__init__(self)
         # Parameters
-        self.start_date = date(2019, 5, 1)
-        self.end_date = date(2021, 9, 1)
-        self.base_location = r"M:\COTA\APC_201905_202109\\"
+        self.start_date = date(2019, 11, 1)
+        self.end_date = date(2022, 3, 1)
+        self.base_location = r"M:\COTA\APC_201905_202202\\"
 
         # Mongo GTFS setup
         # self.db_GTFS = client.cota_gtfs
@@ -151,6 +151,7 @@ def normalizeAPC():
 
 if __name__ == "__main__":
     tester = APCTester()
+    tester.unzipCSVFiles()
     tester.normalizeAPC()
     # pool = multiprocessing.Pool(processes=3)
     # month_range = ["May18", "Sep18", "Jan19"]
