@@ -20,7 +20,7 @@ class APCTester(BasicSolver.BasicSolver):
     def __init__(self):
         BasicSolver.BasicSolver.__init__(self)
         # Parameters
-        self.start_date = date(2019, 11, 1)
+        self.start_date = date(2021, 10, 1)
         self.end_date = date(2022, 3, 1)
         self.base_location = r"M:\COTA\APC_201905_202202\\"
 
@@ -51,7 +51,7 @@ class APCTester(BasicSolver.BasicSolver):
             print("**********", file_name, ", start... **********")
             insert_dic = {}
             with open(self.base_location + file_name + '.csv', 'r') as infile:
-                reader = csv.reader(infile)
+                reader = csv.reader(infile, quoting=csv.QUOTE_NONE)
                 count = -1
                 fields = []
                 for row in tqdm(reader):
@@ -130,7 +130,10 @@ class APCTester(BasicSolver.BasicSolver):
         eachRecordDic["passenger_miles"] = float(originDic["PSGR_MILES"])
         eachRecordDic["passenger_hours"] = float(originDic["PSGR_HOURS"])
         eachRecordDic["bus_id"] = int(originDic["BUS"])
-        eachRecordDic["trip_id"] = int(originDic["TRIP_ID"])
+        try:
+            eachRecordDic["trip_id"] = int(originDic["TRIP_ID"])
+        except:
+            eachRecordDic["trip_id"] = originDic["TRIP_ID"]
 
         eachRecordDic["num_wheelchair"] = int(originDic["NUM_WC_RECS"])
         eachRecordDic["num_bike1"] = int(originDic["NUM_SP1_RECS"])
@@ -151,7 +154,7 @@ def normalizeAPC():
 
 if __name__ == "__main__":
     tester = APCTester()
-    tester.unzipCSVFiles()
+    # tester.unzipCSVFiles()
     tester.normalizeAPC()
     # pool = multiprocessing.Pool(processes=3)
     # month_range = ["May18", "Sep18", "Jan19"]
