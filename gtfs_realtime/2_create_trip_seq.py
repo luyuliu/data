@@ -24,7 +24,7 @@ db_GTFS = client.cota_gtfs
 
 db_time_stamps_set=set()
 db_time_stamps=[]
-raw_stamps=db_GTFS.collection_names()
+raw_stamps=db_GTFS.list_collection_names()
 for each_raw in raw_stamps:
     each_raw=int(each_raw.split("_")[0])
     db_time_stamps_set.add(each_raw)

@@ -14,10 +14,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import transfer_tools
 
 ''' !!!Parameters to change!!! '''
-trip_update_source_collection_name = "all_trip_update_20211124" # Raw trip update collection name
-start_date = date(2021, 1, 12)
-end_date = date(2021, 11, 24)
-cores = 30 # Paralleling process count. Go to task manager to find how many logical processors your machine have. I recommend to use 3/4 of all the cores you have. 
+trip_update_source_collection_name = "trip_update_09232025" # Raw trip update collection name
+start_date = date(2021, 11, 23)
+end_date = date(2025, 9, 23)
+cores = 60 # Paralleling process count. Go to task manager to find how many logical processors your machine have. I recommend to use 3/4 of all the cores you have. 
 # For example, CURA workstation has 40 cores, I find 30 cores are a reasonable balance between speed and reliability. 35 is still okay but may risk crashing. 
 client = pymongo.MongoClient('mongodb://localhost:27017/')
 db_GTFS = client.cota_gtfs # GTFS database
@@ -56,10 +56,13 @@ def paralleling_transfers(single_date):
     # Collection to be added.
     col_real_time = db_realtime["R"+today_date]
     # The GTFS feed collection which has been divided by each day.
-    rl_feeds = (col_feed.find({"start_date": today_date}, no_cursor_timeout=True))
-    if rl_feeds.count() == 0:  # There is no feed this day, which shouldn't happen.
+        
+    if col_feed.find_one({"start_date": today_date}, {"_id": 1}) is None: # There is no feed this day, which shouldn't happen.
         return
-    total_count = rl_feeds.count()  # Total length of this day's feed.
+    rl_feeds = (col_feed.find({"start_date": today_date}, no_cursor_timeout=True))
+    # if rl_feeds.count_documents() == 0: # Deprecated. Sad.
+    #     return
+    # total_count = rl_feeds.count()  # Total length of this day's feed.
 
     count = 0
     for each_feed in rl_feeds:  # For each feed record.

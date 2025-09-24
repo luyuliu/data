@@ -9,7 +9,7 @@ from tqdm import tqdm
 client = pymongo.MongoClient('mongodb://localhost:27017/')
 db_GTFS = client.cota_gtfs
 db_tripupdate = client.cota_trip_update # Raw trip update database
-trip_update_source_collection_name = "all_trip_update_20211124" # Raw trip update collection name
+trip_update_source_collection_name = "trip_update_09232025" # Raw trip update collection name
 
 
 def convertSeconds(BTimeString):
@@ -26,7 +26,7 @@ def sortArray(a):
 # Find all GTFS schedule with unique timestamps
 db_time_stamps_set=set()
 db_time_stamps=[]
-raw_stamps=db_GTFS.collection_names()
+raw_stamps=db_GTFS.list_collection_names()
 for each_raw in raw_stamps:
     each_raw=int(each_raw.split("_")[0])
     db_time_stamps_set.add(each_raw)
@@ -35,7 +35,7 @@ for each_raw in db_time_stamps_set:
     db_time_stamps.append(each_raw)
 db_time_stamps.sort()
 
-db_tripupdate[trip_update_source_collection_name].create_index([("start_date", 1)]) # Will take a long time
+# db_tripupdate[trip_update_source_collection_name].create_index([("start_date", 1)]) # Will take a long time
 
 for each_time_stamp in tqdm(db_time_stamps):
     db_stops=db_GTFS[str(each_time_stamp)+"_stops"]
