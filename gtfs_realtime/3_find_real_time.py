@@ -15,7 +15,7 @@ import transfer_tools
 
 ''' !!!Parameters to change!!! '''
 trip_update_source_collection_name = "trip_update_09232025" # Raw trip update collection name
-start_date = date(2021, 11, 23)
+start_date = date(2023, 3, 18)
 end_date = date(2025, 9, 23)
 cores = 60 # Paralleling process count. Go to task manager to find how many logical processors your machine have. I recommend to use 3/4 of all the cores you have. 
 # For example, CURA workstation has 40 cores, I find 30 cores are a reasonable balance between speed and reliability. 35 is still okay but may risk crashing. 
